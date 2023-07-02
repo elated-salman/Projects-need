@@ -1,0 +1,132 @@
+a 
+
+**********change hostname****************
+commands:
+sudo hostname <name you want to give>
+exec bash
+
+*********jenkins master slave configuration*****
+step1:install java on all instances 
+       sudo apt install default-jre
+step2:install jenkins on master-ec2 instance
+step3:in master create pubkey and private using 
+      ssh-keygen -t rsa
+      two keys id_rsa,id_rsa.pub will be generated in /home/ubuntu/.ssh
+step4:copy publickey of master in authorized_keys which is located in /home/ubuntu/.ssh of slaves
+
+step5:connect to jenkins
+      1.go to manage jenkins
+      2.go to nodes and clouds
+      3.click on new node
+      4.give name and select permanent agent and click on create
+      5.give name,description,no of executors,remote root directory,labels
+       6.in usage select <use node as much as possible>
+       7.in launch method select <launch agents via ssh>
+       8.in host paste private ip of slave
+       9.in credentials click on add
+       10.in kind select <SSH user name with private key>
+       11.give id,description,username
+       12.in privatekey add data of pem file and save
+       13.in host key verification strategy select<manually trusted key verification strategy>
+       14.save
+
+------------------------------------------------------------------------------------------------------------------------------------------------
+MASTER CONFIGURATION:
+
+sudo apt update 
+sudo apt full-upgrade -y
+----install java----
+sudo apt install default-jre -y
+
+copy some packages from google for install jenkins
+
+sudo apt install jenkins -y
+sudo systemctl start jenkins
+sudo systemctl enable jenkins
+sudo systemctl status jenkins
+ssh-keygen -t rsa
+cd .ssh/
+ sudo vi id_rsa.pub
+copy the public key and paste it on slave authorized_keys
+
+SLAVE CONFIGURATION:
+
+sudo apt update
+sudo apt full-upgrade -y
+sudo vi /etc/hostname (or) sudo hostname deepu 
+sudo init 6 (or) sudo exec bash if sudo required
+----install java----
+sudo apt install default-jre -y
+cd .ssh/
+sudo vi authorized_keys
+paste master key (id_rsa.pub)
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------
+ Another method
+SLAVE CONFIGURATION
+
+> install java === sudo apt install default-jre -y
+
+> create a user ==== sudo adduser username
+ 			    ===== sudo su - username
+> Generate a key ==== ssh-keygen -t rsa -N " " -f /home/username/.ssh/id_rsa
+				-f == forrce
+> Go inside the folder === cd .ssh/
+
+> cat id_rsa > authorized_keys
+
+> give permissions === chmod 700 authorized_keys
+ 
+after go  into the directory /var/lib/jenkins/.ssh == ls
+copy the key from *id_rsa.pub* and paste the key in master configuration file authorized keys
+
+MASTER CONFIGURATION:
+
+> sudo apt update 
+
+> sudo apt full-upgrade -y
+
+> sudo apt install default-jre -y
+
+> sudo apt install jenkins -y
+start and  enable the service 
+
+> sudo mkdir -p /var/lib/jenkins/.ssh
+
+> cd /var/lib/jenkins
+
+>sudo chmod 777 .ssh/
+
+> cd .ssh/
+
+> sudo key-scan -H SLAVE_NODE_PRIVATE_IP >>/var/lib/jenkins/.ssh/ 
+		name== give any name for storing the slaves public id 
+
+> Go inside the path ===cd /var/lib/jenkins/.ssh
+name
+> sudo chown jenkins:jenkins name
+
+> sudo chmod 700 name
+
+> cd .ssh/
+
+> sudo vi authorized_keys
+
+>Paste the public sshkey in authorized_keys
+
+
+-----------------------------------------------------------------------------------------------------
+
+curl -fsSL https://pkg.jenkins.io/debian/jenkins.io-2023.key | sudo tee \
+  /usr/share/keyrings/jenkins-keyring.asc > /dev/null
+echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] \
+  https://pkg.jenkins.io/debian binary/ | sudo tee \
+  /etc/apt/sources.list.d/jenkins.list > /dev/null
+sudo apt-get update
+sudo apt-get install jenkins
+
+
+
+
+

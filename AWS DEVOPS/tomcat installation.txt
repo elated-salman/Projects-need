@@ -1,0 +1,71 @@
+---------tomcat installation steps------
+
+wget https://downloads.apache.org/tomcat/tomcat-9/v9.0.76/bin/apache-tomcat-9.0.76.tar.gz.asc
+tar -xvf apache-tomcat-9.0.76.tar.gz
+cd apache-tomcat-9.0.76.tar.gz
+cd conf
+sudo vi tomcat-users.xml
+paste this in tomcat-users.xml
+ <user username="tomcat" password="admin" roles="manager-gui,admin-gui,manager-script"/>
+
+go to webapps
+cd webapps
+cd manager 
+cd META-INF
+sudo vi context.xml
+paste this in context.xml
+ <!--Valve className="org.apache.catalina.valves.RemoteAddrValve"
+         allow="127\.\d+\.\d+\.\d+|::1|0:0:0:0:0:0:0:1" /-->
+
+
+cd host-manager
+cd META-INF
+sudo vi context.xml
+paste this in context.xml
+
+ <!--Valve className="org.apache.catalina.valves.RemoteAddrValve"
+         allow="127\.\d+\.\d+\.\d+|::1|0:0:0:0:0:0:0:1" /-->
+
+---------------------------------------------------------------------------------------------------------------
+
+===========script=================
+
+
+pipeline {
+    agent any
+    tools {
+      maven 'mvn'
+      }
+
+    stages {
+        stage('git checkout') {
+            steps {
+                git 'https://github.com/dy2505/JavaWebCalculator.git'
+            }
+        }
+        stage('build') {
+            steps {
+                sh 'mvn -f /var/lib/jenkins/workspace/ramya/ clean package'
+            }
+        }
+        stage ('deploy') {
+        steps{
+          sshagent(['slave']) {
+            sh 'scp -o StrictHostKeyChecking=no /var/lib/jenkins/workspace/ramya/target/webapp-0.1.war ubuntu@44.210.140.59:/home/ubuntu/apache-tomcat-9.0.76/webapps'
+             }
+        }
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
